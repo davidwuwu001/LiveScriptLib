@@ -1067,7 +1067,8 @@
         categories.forEach(category => {
           const cards = document.querySelectorAll(`[data-category="${category}"]`);
           scriptsData[category] = Array.from(cards).map(card => {
-            return card.querySelector('.script-content').textContent;
+            const contentElement = card.querySelector('.script-content');
+            return contentElement ? contentElement.textContent : '';
           });
         });
         
@@ -1354,7 +1355,8 @@
         if (categoryCards.length > 0) {
           content += `\n=== ${utils.getCategoryName(category)} ===\n`;
           categoryCards.forEach((card, index) => {
-            const scriptContent = card.querySelector('.script-content').textContent;
+            const contentElement = card.querySelector('.script-content');
+            const scriptContent = contentElement ? contentElement.textContent : '内容缺失';
             content += `${index + 1}. ${scriptContent}\n`;
           });
         }

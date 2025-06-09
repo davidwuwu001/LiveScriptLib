@@ -52,33 +52,7 @@
       box-shadow: 0 8px 32px rgba(0,0,0,0.1);
     }
     
-    /* 统计栏 */
-    .stats-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 15px;
-    }
-    
-    .stat-item {
-      text-align: center;
-      flex: 1;
-      min-width: 120px;
-    }
-    
-    .stat-number {
-      font-size: 2rem;
-      font-weight: bold;
-      color: #6366f1;
-      display: block;
-    }
-    
-    .stat-label {
-      color: #666;
-      font-size: 0.9rem;
-      margin-top: 5px;
-    }
+
     
     /* 控制面板 */
     .controls {
@@ -218,20 +192,21 @@
     .scripts-grid {
       display: flex;
       flex-direction: column;
-      gap: 15px;
-      margin-bottom: 30px;
+      gap: 10px;
+      margin-bottom: 20px;
     }
     
     .script-card {
       background: rgba(255, 255, 255, 0.95);
       border-radius: 12px;
-      padding: 20px;
+      padding: 15px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.08);
       transition: all 0.3s ease;
       border-left: 4px solid #6366f1;
       width: 100%;
       display: flex;
       flex-direction: column;
+      margin-bottom: 15px;
     }
     
     .script-card:hover {
@@ -246,32 +221,42 @@
     .script-card.promotion { border-left-color: #ef4444; }
     .script-card.question { border-left-color: #8b5cf6; }
     
+    .script-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+    
     .script-title {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 600;
       color: #374151;
-      margin-bottom: 15px;
       display: flex;
       align-items: center;
       gap: 8px;
+      flex: 1;
     }
     
     .script-content {
       color: #4b5563;
-      line-height: 1.6;
-      margin-bottom: 20px;
+      line-height: 1.5;
       white-space: pre-wrap;
+      margin-bottom: 0;
     }
     
     .copy-btn {
       background: linear-gradient(135deg, #f59e0b, #d97706);
       color: white;
       border: none;
-      padding: 8px 16px;
+      padding: 6px 12px;
       border-radius: 6px;
       cursor: pointer;
-      font-size: 0.9rem;
+      font-size: 0.8rem;
       transition: all 0.3s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     
     .copy-btn:hover {
@@ -486,11 +471,39 @@
     /* 响应式设计 */
     @media (max-width: 768px) {
       .container {
-        padding: 15px;
+        padding: 10px;
+      }
+      
+      .header {
+        margin-bottom: 20px;
       }
       
       .header h1 {
-        font-size: 2rem;
+        font-size: 1.8rem;
+      }
+      
+      .card {
+        padding: 15px;
+        margin-bottom: 15px;
+      }
+      
+      .script-card {
+        padding: 12px;
+        margin-bottom: 10px;
+      }
+      
+      .script-title {
+        font-size: 0.9rem;
+      }
+      
+      .script-content {
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+      
+      .copy-btn {
+        padding: 4px 8px;
+        font-size: 0.75rem;
       }
       
       .controls {
@@ -525,29 +538,7 @@
       <p>AI智能生成，让你的直播更精彩</p>
     </div>
 
-    <!-- 统计栏 -->
-    <div class="card stats-bar">
-      <div class="stat-item">
-        <span class="stat-number" id="totalScripts">0</span>
-        <div class="stat-label">总话术数</div>
-      </div>
-      <div class="stat-item">
-        <span class="stat-number" id="interactionCount">0</span>
-        <div class="stat-label">互动话术</div>
-      </div>
-      <div class="stat-item">
-        <span class="stat-number" id="lotteryCount">0</span>
-        <div class="stat-label">抽奖话术</div>
-      </div>
-      <div class="stat-item">
-        <span class="stat-number" id="questionCount">0</span>
-        <div class="stat-label">互动问题</div>
-      </div>
-      <div class="stat-item">
-        <span class="stat-number" id="promotionCount">0</span>
-        <div class="stat-label">推广话术</div>
-      </div>
-    </div>
+
 
     <!-- 控制面板 -->
     <div class="card controls">
@@ -571,7 +562,6 @@
         </div>
       </div>
       <div style="margin-left: auto; display: flex; gap: 10px;">
-        <button class="btn btn-secondary" onclick="exportTXT()">📄 导出TXT</button>
         <button class="btn btn-outline" onclick="clearAllScripts()">🗑️ 清空话术</button>
         <button class="btn btn-primary" onclick="toggleAIPanel()">🤖 AI分析</button>
       </div>
@@ -950,7 +940,6 @@
             this.updateCategoryCards(category, utils.parseAIResult(results[index]));
           }
         });
-        this.updateStats();
         // 保存生成的话术到本地存储
         this.saveScriptsToLocal();
       },
@@ -988,36 +977,17 @@
         card.dataset.category = category;
         
         card.innerHTML = `
-          <div class="script-title">${utils.getCategoryName(category)} ${index}</div>
+          <div class="script-header">
+            <div class="script-title">${utils.getCategoryName(category)} ${index}</div>
+            <button class="copy-btn" onclick="utils.copyToClipboard('${content.replace(/'/g, "\'")}')">📋 复制</button>
+          </div>
           <div class="script-content">${content}</div>
-          <button class="copy-btn" onclick="utils.copyToClipboard('${content.replace(/'/g, "\\'")}')">📋 复制话术</button>
         `;
         
         return card;
       },
 
-      // 更新统计
-      updateStats() {
-        const categories = Object.keys(CONFIG.CATEGORIES);
-        let total = 0;
-        
-        categories.forEach(category => {
-          const scriptsContainer = document.getElementById('scriptsGrid');
-          const questionsContainer = document.getElementById('questionsGrid');
-          
-          let count = 0;
-          if (category === 'question') {
-            count = questionsContainer.querySelectorAll(`[data-category="${category}"]`).length;
-          } else {
-            count = scriptsContainer.querySelectorAll(`[data-category="${category}"]`).length;
-          }
-          
-          document.getElementById(`${category}Count`).textContent = count;
-          total += count;
-        });
-        
-        document.getElementById('totalScripts').textContent = total;
-      },
+
 
       // 过滤话术
       filterScripts(category) {
@@ -1069,7 +1039,6 @@
           // 清空本地保存的话术
           localStorage.removeItem(CONFIG.STORAGE_KEYS.GENERATED_SCRIPTS);
           
-          this.updateStats();
           utils.showToast('所有话术、问题、对话上下文和本地保存的话术已清空！');
         }
       },
@@ -1104,8 +1073,6 @@
               this.updateCategoryCards(category, scriptsData[category]);
             }
           });
-          
-          this.updateStats();
           
           // 如果有保存的话术，显示提示
           const totalScripts = categories.reduce((total, category) => {
@@ -1362,7 +1329,6 @@
             // 实时更新页面（单个分类完成时）
             const scripts = utils.parseAIResult(result);
             scriptManager.updateCategoryCards(category, scripts);
-            scriptManager.updateStats();
             
             // 显示完成提示
             updateProgress(i + 1, categories.length, `${categoryNames[category]} 生成完成！`);
@@ -1417,7 +1383,6 @@
         const result = await aiService.callAI(aiService.getPrompt(category), liveScript, category, true);
         const scripts = utils.parseAIResult(result);
         scriptManager.updateCategoryCards(category, scripts);
-        scriptManager.updateStats();
         
         const categoryName = utils.getCategoryName(category).replace(/[💬🎁❓📢]/g, '').trim();
         utils.showToast(`${categoryName}话术已刷新！`);
@@ -1447,40 +1412,7 @@
       configManager.loadCurrentPrompt();
     }
 
-    function exportTXT() {
-      const cards = document.querySelectorAll('.script-card');
-      if (cards.length === 0) {
-        utils.showToast('暂无话术可导出！', 'error');
-        return;
-      }
-      
-      let content = '直播助手话术库导出\n';
-      content += '导出时间：' + new Date().toLocaleString() + '\n\n';
-      
-      Object.keys(CONFIG.CATEGORIES).forEach(category => {
-        const categoryCards = document.querySelectorAll(`[data-category="${category}"]`);
-        if (categoryCards.length > 0) {
-          content += `\n=== ${utils.getCategoryName(category)} ===\n`;
-          categoryCards.forEach((card, index) => {
-            const contentElement = card.querySelector('.script-content');
-            const scriptContent = contentElement ? contentElement.textContent : '内容缺失';
-            content += `${index + 1}. ${scriptContent}\n`;
-          });
-        }
-      });
-      
-      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `直播话术库_${new Date().toISOString().slice(0, 10)}.txt`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      utils.showToast('话术已导出为TXT文件！');
-    }
+
 
     // 事件监听器
     document.addEventListener('DOMContentLoaded', () => {
@@ -1535,7 +1467,7 @@
     window.refreshCategory = refreshCategory;
     window.toggleAIPanel = toggleAIPanel;
     window.switchPromptTab = switchPromptTab;
-    window.exportTXT = exportTXT;
+
     window.handleModelSelect = handleModelSelect;
     window.saveConfig = configManager.saveConfig;
     window.savePrompt = configManager.savePrompt;

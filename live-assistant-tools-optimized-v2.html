@@ -612,7 +612,13 @@
           </div>
           <div>
             <label for="modelName">模型名称</label>
-            <input type="text" id="modelName" placeholder="模型名称" value="deepseek-r1">
+            <select id="modelSelect" onchange="handleModelSelect()" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 5px;">
+              <option value="DeepSeek-R1">DeepSeek-R1</option>
+              <option value="gemini-2.5-flash-preview-05-20">gemini-2.5-flash-preview-05-20</option>
+              <option value="gemini-2.5-pro-preview-06-05">gemini-2.5-pro-preview-06-05</option>
+              <option value="custom">手动填写</option>
+            </select>
+            <input type="text" id="modelName" placeholder="选择模型或手动输入" value="DeepSeek-R1" style="display: none;">
           </div>
         </div>
         <div class="config-row">
@@ -1105,10 +1111,15 @@
     const configManager = {
       // 保存配置
       saveConfig() {
+        const modelSelect = document.getElementById('modelSelect');
+        const modelName = document.getElementById('modelName');
+        const finalModelName = modelSelect.value === 'custom' ? modelName.value : modelSelect.value;
+        
         const config = {
           apiUrl: document.getElementById('apiUrl').value,
           apiKey: document.getElementById('apiKey').value,
-          modelName: document.getElementById('modelName').value
+          modelName: finalModelName,
+          modelSelectValue: modelSelect.value
         };
         localStorage.setItem(CONFIG.STORAGE_KEYS.AI_CONFIG, JSON.stringify(config));
         utils.showToast('配置已保存！');
@@ -1119,7 +1130,32 @@
         const config = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.AI_CONFIG) || '{}');
         if (config.apiUrl) document.getElementById('apiUrl').value = config.apiUrl;
         if (config.apiKey) document.getElementById('apiKey').value = config.apiKey;
-        if (config.modelName) document.getElementById('modelName').value = config.modelName;
+        
+        const modelSelect = document.getElementById('modelSelect');
+        const modelName = document.getElementById('modelName');
+        
+        if (config.modelSelectValue) {
+          modelSelect.value = config.modelSelectValue;
+          if (config.modelSelectValue === 'custom') {
+            modelName.style.display = 'block';
+            modelName.value = config.modelName || '';
+          } else {
+            modelName.style.display = 'none';
+            modelName.value = config.modelSelectValue;
+          }
+        } else if (config.modelName) {
+          // 兼容旧配置
+          const predefinedModels = ['DeepSeek-R1', 'gemini-2.5-flash-preview-05-20', 'gemini-2.5-pro-preview-06-05'];
+          if (predefinedModels.includes(config.modelName)) {
+            modelSelect.value = config.modelName;
+            modelName.style.display = 'none';
+            modelName.value = config.modelName;
+          } else {
+            modelSelect.value = 'custom';
+            modelName.style.display = 'block';
+            modelName.value = config.modelName;
+          }
+        }
       },
 
       // 保存提示词
@@ -1371,12 +1407,27 @@
       });
     });
 
+    // 处理模型选择
+    function handleModelSelect() {
+      const modelSelect = document.getElementById('modelSelect');
+      const modelName = document.getElementById('modelName');
+      
+      if (modelSelect.value === 'custom') {
+        modelName.style.display = 'block';
+        modelName.focus();
+      } else {
+        modelName.style.display = 'none';
+        modelName.value = modelSelect.value;
+      }
+    }
+
     // 全局函数（保持向后兼容）
     window.analyzeScript = analyzeScript;
     window.refreshCategory = refreshCategory;
     window.toggleAIPanel = toggleAIPanel;
     window.switchPromptTab = switchPromptTab;
     window.exportTXT = exportTXT;
+    window.handleModelSelect = handleModelSelect;
     window.saveConfig = configManager.saveConfig;
     window.savePrompt = configManager.savePrompt;
     window.resetPrompt = configManager.resetPrompt;

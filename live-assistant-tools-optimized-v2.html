@@ -652,6 +652,21 @@
           <span class="btn-text">🚀 开始AI分析</span>
           <div class="loading-spinner"></div>
         </button>
+        
+        <!-- 进度条 -->
+        <div id="progressContainer" style="display: none; margin-top: 15px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span id="progressText">正在分析...</span>
+            <span id="progressPercent">0%</span>
+          </div>
+          <div style="width: 100%; height: 8px; background-color: #f0f0f0; border-radius: 4px; overflow: hidden;">
+            <div id="progressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #4CAF50, #45a049); transition: width 0.3s ease;"></div>
+          </div>
+          <div id="progressDetails" style="margin-top: 8px; font-size: 0.9em; color: #666;"></div>
+          <button class="btn btn-outline" onclick="returnToHome()" id="returnBtn" style="margin-top: 10px; width: 100%; display: none;">
+            📱 返回主页（后台继续生成）
+          </button>
+        </div>
       </div>
       
       <!-- 历史记录 -->
@@ -1242,51 +1257,143 @@
       }
     };
 
-    // 主要功能函数
+    // 全局变量存储分析状态
+     let analysisState = {
+       isRunning: false,
+       results: [],
+       currentCategory: 0,
+       liveScript: ''
+     };
+
+     // 更新进度条
+     function updateProgress(current, total, message) {
+       const progressBar = document.getElementById('progressBar');
+       const progressText = document.getElementById('progressText');
+       const progressPercent = document.getElementById('progressPercent');
+       const progressDetails = document.getElementById('progressDetails');
+       
+       const percent = Math.round((current / total) * 100);
+       progressBar.style.width = percent + '%';
+       progressPercent.textContent = percent + '%';
+       progressText.textContent = message;
+       progressDetails.textContent = `已完成 ${current}/${total} 个分析任务`;
+     }
+
+     // 重置分析UI
+     function resetAnalysisUI() {
+       const analyzeBtn = document.getElementById('analyzeBtn');
+       const progressContainer = document.getElementById('progressContainer');
+       const returnBtn = document.getElementById('returnBtn');
+       
+       analyzeBtn.style.display = 'block';
+       progressContainer.style.display = 'none';
+       returnBtn.style.display = 'none';
+       
+       analysisState.isRunning = false;
+     }
+
+     // 返回主页（后台继续生成）
+     function returnToHome() {
+       toggleAIPanel();
+       utils.showToast('已返回主页，AI将在后台继续生成话术');
+     }
+
+     // AI分析函数（串行处理）
     async function analyzeScript() {
       if (!utils.validateConfig()) return;
       
       const liveScript = document.getElementById('liveScript').value.trim();
+      if (!liveScript) {
+        utils.showToast('请先输入直播稿内容', 'error');
+        return;
+      }
+      
+      // 初始化分析状态
+      analysisState = {
+        isRunning: true,
+        results: [],
+        currentCategory: 0,
+        liveScript: liveScript
+      };
+      
       const analyzeBtn = document.getElementById('analyzeBtn');
       const btnText = analyzeBtn.querySelector('.btn-text');
       const spinner = analyzeBtn.querySelector('.loading-spinner');
+      const progressContainer = document.getElementById('progressContainer');
+      const returnBtn = document.getElementById('returnBtn');
       
-      // 显示加载状态
-      analyzeBtn.disabled = true;
-      btnText.style.display = 'none';
-      spinner.style.display = 'inline-block';
+      // 显示进度条，隐藏按钮
+      analyzeBtn.style.display = 'none';
+      progressContainer.style.display = 'block';
+      returnBtn.style.display = 'block';
       
       try {
         // 清空所有对话历史，重新开始
         conversationManager.clearAllConversations();
         
-        // 并行调用四个分析任务
+        // 串行调用四个分析任务
         const categories = Object.keys(CONFIG.CATEGORIES);
-        const analysisPromises = categories.map(category => 
-          aiService.callAI(aiService.getPrompt(category), liveScript, category, false)
-        );
+        const categoryNames = {
+          interaction: '💬 评论区互动话术',
+          lottery: '🎁 抽奖话术',
+          question: '❓ 互动问题',
+          promotion: '📢 朋友圈转发话术'
+        };
         
-        const results = await Promise.all(analysisPromises);
+        for (let i = 0; i < categories.length; i++) {
+          if (!analysisState.isRunning) break; // 检查是否被中断
+          
+          const category = categories[i];
+          analysisState.currentCategory = i;
+          
+          // 更新进度
+          updateProgress(i, categories.length, `正在生成${categoryNames[category]}...`);
+          
+          try {
+            const result = await aiService.callAI(
+              aiService.getPrompt(category), 
+              liveScript, 
+              category, 
+              false
+            );
+            
+            analysisState.results[i] = result;
+            
+            // 实时更新页面（单个分类完成时）
+            const scripts = utils.parseAIResult(result);
+            scriptManager.updateCategoryCards(category, scripts);
+            scriptManager.updateStats();
+            
+            // 显示完成提示
+            updateProgress(i + 1, categories.length, `${categoryNames[category]} 生成完成！`);
+            
+          } catch (error) {
+            console.error(`${category} 分析失败:`, error);
+            analysisState.results[i] = null;
+            updateProgress(i + 1, categories.length, `${categoryNames[category]} 生成失败，继续下一个...`);
+          }
+        }
         
-        // 更新页面内容
-        scriptManager.updateScriptCards(results);
-        
-        // 保存到历史记录
-        historyManager.saveToHistory(liveScript, results);
-        
-        // 关闭AI面板
-        toggleAIPanel();
-        
-        utils.showToast('AI分析完成！话术已更新到页面中');
+        // 分析完成
+        if (analysisState.isRunning) {
+          // 保存到历史记录
+          const validResults = analysisState.results.filter(r => r !== null);
+          if (validResults.length > 0) {
+            historyManager.saveToHistory(liveScript, analysisState.results);
+          }
+          
+          updateProgress(categories.length, categories.length, '🎉 所有话术生成完成！');
+          
+          setTimeout(() => {
+            resetAnalysisUI();
+            utils.showToast('AI分析完成！话术已更新到页面中');
+          }, 2000);
+        }
         
       } catch (error) {
         console.error('分析失败:', error);
         utils.showToast('分析失败：' + error.message, 'error');
-      } finally {
-        // 恢复按钮状态
-        analyzeBtn.disabled = false;
-        btnText.style.display = 'inline-block';
-        spinner.style.display = 'none';
+        resetAnalysisUI();
       }
     }
 
@@ -1435,6 +1542,9 @@
     window.resetPrompt = configManager.resetPrompt;
     window.clearAllScripts = scriptManager.clearAllScripts;
     window.clearHistory = historyManager.clearHistory;
+    window.returnToHome = returnToHome;
+    window.updateProgress = updateProgress;
+    window.resetAnalysisUI = resetAnalysisUI;
   </script>
 </body>
 </html>

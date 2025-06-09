@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "live-assistant-tools-optimized-v2.html": {
-      "memory": 1024
-    }
-  },
   "rewrites": [
     {
       "source": "/",

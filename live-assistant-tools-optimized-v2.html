@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>直播助手话术库 2.0 - 优化版</title>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      color: white;
+    }
+    
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+    
+    /* 通用卡片样式 */
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    
+    /* 统计栏 */
+    .stats-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    .stat-item {
+      text-align: center;
+      flex: 1;
+      min-width: 120px;
+    }
+    
+    .stat-number {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #6366f1;
+      display: block;
+    }
+    
+    .stat-label {
+      color: #666;
+      font-size: 0.9rem;
+      margin-top: 5px;
+    }
+    
+    /* 控制面板 */
+    .controls {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    
+    /* 按钮样式 */
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+    }
+    
+    .btn-secondary {
+      background: linear-gradient(135deg, #06b6d4, #0891b2);
+      color: white;
+    }
+    
+    .btn-secondary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(6, 182, 212, 0.4);
+    }
+    
+    .btn-success {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+    }
+    
+    .btn-success:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+    
+    .btn-outline {
+      background: transparent;
+      border: 2px solid #6366f1;
+      color: #6366f1;
+    }
+    
+    .btn-outline:hover:not(:disabled) {
+      background: #6366f1;
+      color: white;
+    }
+    
+    /* 过滤器 */
+    .filter-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .filter-btn {
+      padding: 8px 16px;
+      border: 2px solid #e5e7eb;
+      background: white;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+    
+    .filter-btn.active {
+      background: #6366f1;
+      color: white;
+      border-color: #6366f1;
+    }
+    
+    .refresh-btn {
+      padding: 6px 8px;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.8rem;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .refresh-btn:hover:not(:disabled) {
+      background: #e5e7eb;
+      transform: rotate(180deg);
+    }
+    
+    .refresh-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .refresh-btn.loading {
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    /* 话术列表 */
+    .scripts-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    
+    .script-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+      border-left: 4px solid #6366f1;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .script-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    }
+    
+    /* 分类颜色 */
+    .script-card.welcome { border-left-color: #10b981; }
+    .script-card.interaction { border-left-color: #06b6d4; }
+    .script-card.lottery { border-left-color: #f59e0b; }
+    .script-card.promotion { border-left-color: #ef4444; }
+    .script-card.question { border-left-color: #8b5cf6; }
+    
+    .script-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .script-content {
+      color: #4b5563;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      white-space: pre-wrap;
+    }
+    
+    .copy-btn {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+    
+    .copy-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+    }
+    
+    /* AI面板 */
+    .ai-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(5px);
+    }
+    
+    .ai-panel-content {
+      background: white;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+    
+    .ai-panel-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 20px 20px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .ai-panel-header h3 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    
+    .close-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+    
+    .close-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.1);
+    }
+    
+    .panel-section {
+      padding: 20px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .panel-section:last-child {
+      border-bottom: none;
+    }
+    
+    .panel-section label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #374151;
+    }
+    
+    .panel-section textarea,
+    .panel-section input {
+      width: 100%;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 15px;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+    
+    .panel-section textarea:focus,
+    .panel-section input:focus {
+      outline: none;
+      border-color: #6366f1;
+    }
+    
+    .config-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .config-row:last-child {
+      margin-bottom: 0;
+    }
+    
+    .prompt-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+    
+    .prompt-tab {
+      padding: 8px 16px;
+      border: 2px solid #e5e7eb;
+      background: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+    
+    .prompt-tab.active {
+      background: #6366f1;
+      color: white;
+      border-color: #6366f1;
+    }
+    
+    .loading-spinner {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #ffffff;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #10b981;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 10000;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+    }
+    
+    .toast.show {
+      transform: translateX(0);
+    }
+    
+    .toast.error {
+      background: #ef4444;
+    }
+    
+    .history-item {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .history-item:hover {
+      background: #f3f4f6;
+      border-color: #6366f1;
+    }
+    
+    .history-item-date {
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin-bottom: 5px;
+    }
+    
+    .history-item-preview {
+      color: #374151;
+      font-size: 0.95rem;
+    }
+    
+    .no-history {
+      text-align: center;
+      color: #6b7280;
+      font-style: italic;
+      padding: 20px;
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .container {
+        padding: 15px;
+      }
+      
+      .header h1 {
+        font-size: 2rem;
+      }
+      
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .filter-buttons {
+        justify-content: center;
+      }
+      
+      .config-row {
+        grid-template-columns: 1fr;
+      }
+      
+      .scripts-grid {
+        gap: 12px;
+      }
+      
+      .script-card {
+        padding: 16px;
+        border-radius: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 头部 -->
+    <div class="header">
+      <h1>🎯 直播助手话术库 2.0</h1>
+      <p>AI智能生成，让你的直播更精彩</p>
+    </div>
+
+    <!-- 统计栏 -->
+    <div class="card stats-bar">
+      <div class="stat-item">
+        <span class="stat-number" id="totalScripts">0</span>
+        <div class="stat-label">总话术数</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number" id="interactionCount">0</span>
+        <div class="stat-label">互动话术</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number" id="lotteryCount">0</span>
+        <div class="stat-label">抽奖话术</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number" id="questionCount">0</span>
+        <div class="stat-label">互动问题</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number" id="promotionCount">0</span>
+        <div class="stat-label">推广话术</div>
+      </div>
+    </div>
+
+    <!-- 控制面板 -->
+    <div class="card controls">
+      <div class="filter-buttons">
+        <button class="filter-btn active" data-category="all">🌟 全部</button>
+        <div class="filter-group">
+          <button class="filter-btn" data-category="interaction">💬 评论区互动</button>
+          <button class="refresh-btn" data-category="interaction" onclick="refreshCategory('interaction')" title="刷新评论区互动话术">🔄</button>
+        </div>
+        <div class="filter-group">
+          <button class="filter-btn" data-category="lottery">🎁 抽奖话术</button>
+          <button class="refresh-btn" data-category="lottery" onclick="refreshCategory('lottery')" title="刷新抽奖话术">🔄</button>
+        </div>
+        <div class="filter-group">
+          <button class="filter-btn" data-category="question">❓ 互动问题</button>
+          <button class="refresh-btn" data-category="question" onclick="refreshCategory('question')" title="刷新互动问题">🔄</button>
+        </div>
+        <div class="filter-group">
+          <button class="filter-btn" data-category="promotion">📢 朋友圈转发</button>
+          <button class="refresh-btn" data-category="promotion" onclick="refreshCategory('promotion')" title="刷新朋友圈转发话术">🔄</button>
+        </div>
+      </div>
+      <div style="margin-left: auto; display: flex; gap: 10px;">
+        <button class="btn btn-secondary" onclick="exportTXT()">📄 导出TXT</button>
+        <button class="btn btn-outline" onclick="clearAllScripts()">🗑️ 清空话术</button>
+        <button class="btn btn-primary" onclick="toggleAIPanel()">🤖 AI分析</button>
+      </div>
+    </div>
+
+    <!-- 话术展示区域 -->
+    <div class="scripts-grid" id="scriptsGrid">
+      <p style="text-align: center; color: #666; margin: 50px 0;">暂无话术内容，请使用AI分析功能生成话术</p>
+    </div>
+
+    <!-- 互动问题库 -->
+    <div class="scripts-grid" id="questionsGrid">
+      <p style="text-align: center; color: #666; margin: 50px 0;">暂无问题内容，请使用AI分析功能生成问题</p>
+    </div>
+  </div>
+
+  <!-- AI分析面板 -->
+  <div class="ai-panel" id="aiPanel" style="display: none;">
+    <div class="ai-panel-content">
+      <div class="ai-panel-header">
+        <h3>🤖 AI智能分析</h3>
+        <button class="close-btn" onclick="toggleAIPanel()">×</button>
+      </div>
+      
+      <!-- 直播稿输入 -->
+      <div class="panel-section">
+        <label for="liveScript">📝 直播稿内容</label>
+        <textarea id="liveScript" rows="8" placeholder="请粘贴你的直播稿内容，AI将基于此内容生成相应的话术..."></textarea>
+      </div>
+      
+      <!-- API配置 -->
+      <div class="panel-section">
+        <h4 style="margin-bottom: 15px;">⚙️ API配置</h4>
+        <div class="config-row">
+          <div>
+            <label for="apiUrl">API地址</label>
+            <input type="text" id="apiUrl" placeholder="https://api.openai.com/v1/chat/completions" value="https://api.openai.com/v1/chat/completions">
+          </div>
+          <div>
+            <label for="modelName">模型名称</label>
+            <input type="text" id="modelName" placeholder="gpt-3.5-turbo" value="gpt-3.5-turbo">
+          </div>
+        </div>
+        <div class="config-row">
+          <div style="grid-column: 1 / -1;">
+            <label for="apiKey">API密钥</label>
+            <input type="password" id="apiKey" placeholder="请输入你的API密钥">
+          </div>
+        </div>
+        <button class="btn btn-success" onclick="saveConfig()" style="margin-top: 10px;">💾 保存配置</button>
+      </div>
+      
+      <!-- 提示词自定义 -->
+      <div class="panel-section">
+        <h4 style="margin-bottom: 15px;">✏️ 提示词自定义</h4>
+        <div class="prompt-tabs">
+          <button class="prompt-tab active" onclick="switchPromptTab('interaction')">💬 互动话术</button>
+          <button class="prompt-tab" onclick="switchPromptTab('lottery')">🎁 抽奖话术</button>
+          <button class="prompt-tab" onclick="switchPromptTab('question')">❓ 互动问题</button>
+          <button class="prompt-tab" onclick="switchPromptTab('promotion')">📢 推广话术</button>
+        </div>
+        <textarea id="currentPrompt" rows="6" placeholder="自定义提示词..."></textarea>
+        <div style="margin-top: 10px; display: flex; gap: 10px;">
+          <button class="btn btn-success" onclick="savePrompt()">💾 保存提示词</button>
+          <button class="btn btn-outline" onclick="resetPrompt()">🔄 重置默认</button>
+        </div>
+      </div>
+      
+      <!-- 分析按钮 -->
+      <div class="panel-section">
+        <button class="btn btn-primary" onclick="analyzeScript()" id="analyzeBtn" style="width: 100%; font-size: 1.1rem; padding: 15px;">
+          <span class="btn-text">🚀 开始AI分析</span>
+          <div class="loading-spinner"></div>
+        </button>
+      </div>
+      
+      <!-- 历史记录 -->
+      <div class="panel-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <h4>📚 分析历史</h4>
+          <button class="btn btn-outline" onclick="clearHistory()" style="padding: 6px 12px; font-size: 0.9rem;">清空历史</button>
+        </div>
+        <div id="historyList" style="max-height: 200px; overflow-y: auto;">
+          <p class="no-history">暂无分析历史</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 配置常量
+    const CONFIG = {
+      CATEGORIES: {
+        interaction: { name: '💬 互动话术', color: '#06b6d4' },
+        lottery: { name: '🎁 抽奖话术', color: '#f59e0b' },
+        question: { name: '❓ 互动问题', color: '#8b5cf6' },
+        promotion: { name: '📢 推广话术', color: '#ef4444' }
+      },
+      STORAGE_KEYS: {
+        AI_CONFIG: 'aiConfig',
+        CUSTOM_PROMPTS: 'customPrompts',
+        ANALYSIS_HISTORY: 'analysisHistory',
+        CONVERSATIONS: 'live_assistant_conversations'
+      },
+      DEFAULT_PROMPTS: {
+        interaction: '请基于以下直播稿内容，生成10条适合评论区互动的话术。要求：1. 语言亲切自然 2. 能够引导观众参与互动 3. 符合直播氛围 4. 每条话术独立成行，格式为"1. 话术内容"\n\n直播稿内容：{content}',
+        lottery: '你是有20年经验的直播助手，你的任务是完整阅读直播稿的内容，深入理解内容，从家长刚兴趣和结合家长的痛点，出色完成以下任务\n\n任务2：抽奖话术\n在帮我摘取出助手打在评论区的抽奖话术，字数不要太多40字以内，一些活泼的语气\n\n直播稿内容：{content}',
+        question: '你是有20年经验的直播助手，你的任务是完整阅读直播稿的内容，深入理解内容，从家长刚兴趣和结合家长的痛点，出色完成以下任务\n\n我现在是直播间的水军，我希望从家长的角度和主播互动，请帮我想50个互动问题，围绕家长对测评感兴趣和关心的角度\n\n直播稿内容：{content}\n\n请生成问题列表：',
+        promotion: '参考下面的话术的结构，根据今天的内容，给我写10条朋友圈转发话术，供我选择\n\n参考话术：\n"每个孩子都是星星，只是闪耀的方式不同✨\n天赋潜能测评 ——5 分钟解锁孩子脑区优势、学习类型！\n中科院认证技术，不用填问卷、无辐射，3 岁 + 就能测～\n直播间限时 168 元（立减 230 元）戳链接抢👇"\n\n每条话术独立成行，格式为"1. 话术内容"\n\n直播稿内容：{content}'
+      }
+    };
+
+    // 全局变量
+    let analysisHistory = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.ANALYSIS_HISTORY) || '[]');
+    let currentPromptType = 'interaction';
+
+    // 工具函数
+    const utils = {
+      // 显示提示消息
+      showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.classList.add('show'), 100);
+        setTimeout(() => {
+          toast.classList.remove('show');
+          setTimeout(() => document.body.removeChild(toast), 300);
+        }, 3000);
+      },
+
+      // 复制文本到剪贴板
+      async copyToClipboard(text) {
+        try {
+          await navigator.clipboard.writeText(text);
+          this.showToast('话术已复制到剪贴板！');
+        } catch (err) {
+          console.error('复制失败:', err);
+          this.showToast('复制失败，请手动复制', 'error');
+        }
+      },
+
+      // 验证API配置
+      validateConfig() {
+        const liveScript = document.getElementById('liveScript').value.trim();
+        const apiKey = document.getElementById('apiKey').value.trim();
+        
+        if (!liveScript) {
+          this.showToast('请先粘贴直播稿内容！', 'error');
+          return false;
+        }
+        
+        if (!apiKey) {
+          this.showToast('请先配置API密钥！', 'error');
+          return false;
+        }
+        
+        return true;
+      },
+
+      // 设置按钮加载状态
+      setButtonLoading(button, loading) {
+        if (loading) {
+          button.disabled = true;
+          button.classList.add('loading');
+        } else {
+          button.disabled = false;
+          button.classList.remove('loading');
+        }
+      },
+
+      // 获取分类名称
+      getCategoryName(category) {
+        return CONFIG.CATEGORIES[category]?.name || category;
+      },
+
+      // 解析AI返回结果
+      parseAIResult(result) {
+        const lines = result.split('\n').filter(line => line.trim());
+        const scripts = [];
+        
+        lines.forEach(line => {
+          const match = line.match(/^\d+[.、]\s*(.+)$/);
+          if (match) {
+            scripts.push(match[1].trim());
+          }
+        });
+        
+        return scripts;
+      }
+    };
+
+    // 对话上下文管理
+    const conversationManager = {
+      // 存储每个分类的对话历史
+      conversations: {
+        interaction: [],
+        lottery: [],
+        question: [],
+        promotion: []
+      },
+      
+      // 初始化：从本地存储加载对话历史
+      init() {
+        const saved = localStorage.getItem(CONFIG.STORAGE_KEYS.CONVERSATIONS);
+        if (saved) {
+          try {
+            this.conversations = JSON.parse(saved);
+          } catch (e) {
+            console.warn('加载对话历史失败:', e);
+            this.conversations = {
+              interaction: [],
+              lottery: [],
+              question: [],
+              promotion: []
+            };
+          }
+        }
+      },
+      
+      // 保存对话历史到本地存储
+      save() {
+        localStorage.setItem(CONFIG.STORAGE_KEYS.CONVERSATIONS, JSON.stringify(this.conversations));
+      },
+      
+      // 获取分类的对话历史
+      getConversation(category) {
+        return this.conversations[category] || [];
+      },
+      
+      // 添加消息到对话历史
+      addMessage(category, role, content) {
+        if (!this.conversations[category]) {
+          this.conversations[category] = [];
+        }
+        this.conversations[category].push({ role, content });
+        
+        // 限制对话历史长度，保留最近10轮对话
+        if (this.conversations[category].length > 20) {
+          this.conversations[category] = this.conversations[category].slice(-20);
+        }
+        
+        // 保存到本地存储
+        this.save();
+      },
+      
+      // 清空所有对话历史
+      clearAllConversations() {
+        this.conversations = {
+          interaction: [],
+          lottery: [],
+          question: [],
+          promotion: []
+        };
+        this.save();
+      },
+      
+      // 清空指定分类的对话历史
+      clearConversation(category) {
+        this.conversations[category] = [];
+        this.save();
+      }
+    };
+
+    // AI相关功能
+    const aiService = {
+      // 调用AI API（支持对话上下文）
+      async callAI(prompt, content, category = null, isRefresh = false) {
+        const apiUrl = document.getElementById('apiUrl').value.trim();
+        const apiKey = document.getElementById('apiKey').value.trim();
+        const modelName = document.getElementById('modelName').value;
+        
+        let messages = [];
+        
+        if (category && isRefresh) {
+          // 刷新模式：基于上一轮对话
+          const conversation = conversationManager.getConversation(category);
+          messages = [...conversation];
+          
+          // 添加刷新请求
+          const categoryNames = {
+            interaction: '评论区互动话术',
+            lottery: '抽奖话术', 
+            question: '互动问题',
+            promotion: '朋友圈转发话术'
+          };
+          
+          const refreshPrompt = `请基于我们之前的对话，再为我生成一些新的${categoryNames[category]}，要求：
+1. 与之前生成的内容不重复
+2. 保持相同的风格和质量
+3. 数量与之前相同
+4. 请按照之前约定的格式输出（数字序号 + 内容）`;
+          
+          messages.push({ role: 'user', content: refreshPrompt });
+        } else {
+          // 首次分析模式
+          const fullPrompt = prompt.replace('{content}', content);
+          messages = [{ role: 'user', content: fullPrompt }];
+        }
+        
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: modelName,
+            messages: messages,
+            temperature: 0.7,
+            max_tokens: 2000
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API调用失败: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        const result = data.choices[0].message.content;
+        
+        // 保存对话历史
+        if (category) {
+          if (isRefresh) {
+            // 刷新模式：添加刷新请求和回复
+            const lastUserMessage = messages[messages.length - 1];
+            conversationManager.addMessage(category, 'user', lastUserMessage.content);
+          } else {
+            // 首次分析：添加完整的提示词和回复
+            const fullPrompt = prompt.replace('{content}', content);
+            conversationManager.addMessage(category, 'user', fullPrompt);
+          }
+          conversationManager.addMessage(category, 'assistant', result);
+        }
+        
+        return result;
+      },
+
+      // 获取提示词
+      getPrompt(category) {
+        const savedPrompts = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.CUSTOM_PROMPTS) || '{}');
+        return savedPrompts[category] || CONFIG.DEFAULT_PROMPTS[category];
+      }
+    };
+
+    // 话术管理
+    const scriptManager = {
+      // 更新话术卡片
+      updateScriptCards(results) {
+        const categories = Object.keys(CONFIG.CATEGORIES);
+        categories.forEach((category, index) => {
+          if (results[index]) {
+            this.updateCategoryCards(category, utils.parseAIResult(results[index]));
+          }
+        });
+        this.updateStats();
+      },
+
+      // 更新指定分类的卡片
+      updateCategoryCards(category, scripts) {
+        // 根据分类选择正确的容器
+        const container = category === 'question' 
+          ? document.getElementById('questionsGrid')
+          : document.getElementById('scriptsGrid');
+        
+        // 删除该分类的现有卡片
+        const existingCards = container.querySelectorAll(`[data-category="${category}"]`);
+        existingCards.forEach(card => card.remove());
+        
+        // 如果容器中没有其他内容，先清空默认提示文本
+        if (container.children.length === 1 && container.children[0].tagName === 'P') {
+          container.innerHTML = '';
+        }
+        
+        // 添加新卡片
+        scripts.forEach((script, index) => {
+          const card = this.createScriptCard(category, script, index + 1);
+          container.appendChild(card);
+        });
+      },
+
+      // 创建话术卡片
+      createScriptCard(category, content, index) {
+        const card = document.createElement('div');
+        card.className = `script-card ${category}`;
+        card.dataset.category = category;
+        
+        card.innerHTML = `
+          <div class="script-title">${utils.getCategoryName(category)} ${index}</div>
+          <div class="script-content">${content}</div>
+          <button class="copy-btn" onclick="utils.copyToClipboard('${content.replace(/'/g, "\\'")}')">📋 复制话术</button>
+        `;
+        
+        return card;
+      },
+
+      // 更新统计
+      updateStats() {
+        const categories = Object.keys(CONFIG.CATEGORIES);
+        let total = 0;
+        
+        categories.forEach(category => {
+          const scriptsContainer = document.getElementById('scriptsGrid');
+          const questionsContainer = document.getElementById('questionsGrid');
+          
+          let count = 0;
+          if (category === 'question') {
+            count = questionsContainer.querySelectorAll(`[data-category="${category}"]`).length;
+          } else {
+            count = scriptsContainer.querySelectorAll(`[data-category="${category}"]`).length;
+          }
+          
+          document.getElementById(`${category}Count`).textContent = count;
+          total += count;
+        });
+        
+        document.getElementById('totalScripts').textContent = total;
+      },
+
+      // 过滤话术
+      filterScripts(category) {
+        const cards = document.querySelectorAll('.script-card');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const scriptsGrid = document.getElementById('scriptsGrid');
+        const questionsGrid = document.getElementById('questionsGrid');
+        
+        // 更新按钮状态
+        filterBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.category === category);
+        });
+        
+        // 显示/隐藏卡片和容器
+        if (category === 'all') {
+          // 显示所有
+          cards.forEach(card => card.style.display = 'block');
+          scriptsGrid.style.display = 'grid';
+          questionsGrid.style.display = 'grid';
+        } else if (category === 'question') {
+          // 只显示问题
+          cards.forEach(card => {
+            card.style.display = card.dataset.category === 'question' ? 'block' : 'none';
+          });
+          scriptsGrid.style.display = 'none';
+          questionsGrid.style.display = 'grid';
+        } else {
+          // 显示其他分类
+          cards.forEach(card => {
+            card.style.display = card.dataset.category === category ? 'block' : 'none';
+          });
+          scriptsGrid.style.display = 'grid';
+          questionsGrid.style.display = 'none';
+        }
+      },
+
+      // 清空所有话术
+      clearAllScripts() {
+        if (confirm('确定要清空所有话术吗？此操作将同时清除对话上下文，不可恢复！')) {
+          const scriptsGrid = document.getElementById('scriptsGrid');
+          const questionsGrid = document.getElementById('questionsGrid');
+          
+          scriptsGrid.innerHTML = '<p style="text-align: center; color: #666; margin: 50px 0;">暂无话术内容，请使用AI分析功能生成话术</p>';
+          questionsGrid.innerHTML = '<p style="text-align: center; color: #666; margin: 50px 0;">暂无问题内容，请使用AI分析功能生成问题</p>';
+          
+          // 清空所有对话上下文
+          conversationManager.clearAllConversations();
+          
+          this.updateStats();
+          utils.showToast('所有话术、问题和对话上下文已清空！');
+        }
+      }
+    };
+
+    // 配置管理
+    const configManager = {
+      // 保存配置
+      saveConfig() {
+        const config = {
+          apiUrl: document.getElementById('apiUrl').value,
+          apiKey: document.getElementById('apiKey').value,
+          modelName: document.getElementById('modelName').value
+        };
+        localStorage.setItem(CONFIG.STORAGE_KEYS.AI_CONFIG, JSON.stringify(config));
+        utils.showToast('配置已保存！');
+      },
+
+      // 加载配置
+      loadConfig() {
+        const config = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.AI_CONFIG) || '{}');
+        if (config.apiUrl) document.getElementById('apiUrl').value = config.apiUrl;
+        if (config.apiKey) document.getElementById('apiKey').value = config.apiKey;
+        if (config.modelName) document.getElementById('modelName').value = config.modelName;
+      },
+
+      // 保存提示词
+      savePrompt() {
+        const prompt = document.getElementById('currentPrompt').value;
+        const savedPrompts = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.CUSTOM_PROMPTS) || '{}');
+        savedPrompts[currentPromptType] = prompt;
+        localStorage.setItem(CONFIG.STORAGE_KEYS.CUSTOM_PROMPTS, JSON.stringify(savedPrompts));
+        utils.showToast('提示词已保存！');
+      },
+
+      // 重置提示词
+      resetPrompt() {
+        document.getElementById('currentPrompt').value = CONFIG.DEFAULT_PROMPTS[currentPromptType];
+        utils.showToast('提示词已重置为默认值！');
+      },
+
+      // 加载当前提示词
+      loadCurrentPrompt() {
+        const savedPrompts = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.CUSTOM_PROMPTS) || '{}');
+        const prompt = savedPrompts[currentPromptType] || CONFIG.DEFAULT_PROMPTS[currentPromptType];
+        document.getElementById('currentPrompt').value = prompt;
+      }
+    };
+
+    // 历史记录管理
+    const historyManager = {
+      // 保存到历史记录
+      saveToHistory(script, results) {
+        const historyItem = {
+          id: Date.now(),
+          date: new Date().toLocaleString(),
+          script: script.substring(0, 100) + (script.length > 100 ? '...' : ''),
+          results: results
+        };
+        
+        analysisHistory.unshift(historyItem);
+        
+        // 只保留最近20条记录
+        if (analysisHistory.length > 20) {
+          analysisHistory = analysisHistory.slice(0, 20);
+        }
+        
+        localStorage.setItem(CONFIG.STORAGE_KEYS.ANALYSIS_HISTORY, JSON.stringify(analysisHistory));
+        this.loadHistory();
+      },
+
+      // 加载历史记录
+      loadHistory() {
+        const historyList = document.getElementById('historyList');
+        
+        if (analysisHistory.length === 0) {
+          historyList.innerHTML = '<p class="no-history">暂无分析历史</p>';
+          return;
+        }
+        
+        historyList.innerHTML = analysisHistory.map(item => `
+          <div class="history-item" onclick="historyManager.loadHistoryItem(${item.id})">
+            <div class="history-item-date">${item.date}</div>
+            <div class="history-item-preview">${item.script}</div>
+          </div>
+        `).join('');
+      },
+
+      // 加载历史记录项
+      loadHistoryItem(id) {
+        const item = analysisHistory.find(h => h.id === id);
+        if (item) {
+          scriptManager.updateScriptCards(item.results);
+          toggleAIPanel();
+          utils.showToast('已加载历史分析结果！');
+        }
+      },
+
+      // 清空历史记录
+      clearHistory() {
+        if (confirm('确定要清空所有分析历史吗？')) {
+          analysisHistory = [];
+          localStorage.removeItem(CONFIG.STORAGE_KEYS.ANALYSIS_HISTORY);
+          this.loadHistory();
+          utils.showToast('历史记录已清空！');
+        }
+      }
+    };
+
+    // 主要功能函数
+    async function analyzeScript() {
+      if (!utils.validateConfig()) return;
+      
+      const liveScript = document.getElementById('liveScript').value.trim();
+      const analyzeBtn = document.getElementById('analyzeBtn');
+      const btnText = analyzeBtn.querySelector('.btn-text');
+      const spinner = analyzeBtn.querySelector('.loading-spinner');
+      
+      // 显示加载状态
+      analyzeBtn.disabled = true;
+      btnText.style.display = 'none';
+      spinner.style.display = 'inline-block';
+      
+      try {
+        // 清空所有对话历史，重新开始
+        conversationManager.clearAllConversations();
+        
+        // 并行调用四个分析任务
+        const categories = Object.keys(CONFIG.CATEGORIES);
+        const analysisPromises = categories.map(category => 
+          aiService.callAI(aiService.getPrompt(category), liveScript, category, false)
+        );
+        
+        const results = await Promise.all(analysisPromises);
+        
+        // 更新页面内容
+        scriptManager.updateScriptCards(results);
+        
+        // 保存到历史记录
+        historyManager.saveToHistory(liveScript, results);
+        
+        // 关闭AI面板
+        toggleAIPanel();
+        
+        utils.showToast('AI分析完成！话术已更新到页面中');
+        
+      } catch (error) {
+        console.error('分析失败:', error);
+        utils.showToast('分析失败：' + error.message, 'error');
+      } finally {
+        // 恢复按钮状态
+        analyzeBtn.disabled = false;
+        btnText.style.display = 'inline-block';
+        spinner.style.display = 'none';
+      }
+    }
+
+    async function refreshCategory(category) {
+      if (!utils.validateConfig()) return;
+      
+      const liveScript = document.getElementById('liveScript').value.trim();
+      const refreshBtn = document.querySelector(`[data-category="${category}"].refresh-btn`);
+      
+      // 检查是否有对话历史
+      const conversation = conversationManager.getConversation(category);
+      if (conversation.length === 0) {
+        utils.showToast('请先进行AI分析，再使用刷新功能', 'error');
+        return;
+      }
+      
+      utils.setButtonLoading(refreshBtn, true);
+      
+      try {
+        // 使用刷新模式调用AI，基于上一轮对话
+        const result = await aiService.callAI(aiService.getPrompt(category), liveScript, category, true);
+        const scripts = utils.parseAIResult(result);
+        scriptManager.updateCategoryCards(category, scripts);
+        scriptManager.updateStats();
+        
+        const categoryName = utils.getCategoryName(category).replace(/[💬🎁❓📢]/g, '').trim();
+        utils.showToast(`${categoryName}话术已刷新！`);
+        
+      } catch (error) {
+        console.error('刷新失败:', error);
+        utils.showToast('刷新失败：' + error.message, 'error');
+      } finally {
+        utils.setButtonLoading(refreshBtn, false);
+      }
+    }
+
+    function toggleAIPanel() {
+      const panel = document.getElementById('aiPanel');
+      panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+    }
+
+    function switchPromptTab(type) {
+      currentPromptType = type;
+      
+      // 更新标签状态
+      document.querySelectorAll('.prompt-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.textContent.includes(utils.getCategoryName(type)));
+      });
+      
+      // 加载对应提示词
+      configManager.loadCurrentPrompt();
+    }
+
+    function exportTXT() {
+      const cards = document.querySelectorAll('.script-card');
+      if (cards.length === 0) {
+        utils.showToast('暂无话术可导出！', 'error');
+        return;
+      }
+      
+      let content = '直播助手话术库导出\n';
+      content += '导出时间：' + new Date().toLocaleString() + '\n\n';
+      
+      Object.keys(CONFIG.CATEGORIES).forEach(category => {
+        const categoryCards = document.querySelectorAll(`[data-category="${category}"]`);
+        if (categoryCards.length > 0) {
+          content += `\n=== ${utils.getCategoryName(category)} ===\n`;
+          categoryCards.forEach((card, index) => {
+            const scriptContent = card.querySelector('.script-content').textContent;
+            content += `${index + 1}. ${scriptContent}\n`;
+          });
+        }
+      });
+      
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `直播话术库_${new Date().toISOString().slice(0, 10)}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      utils.showToast('话术已导出为TXT文件！');
+    }
+
+    // 事件监听器
+    document.addEventListener('DOMContentLoaded', () => {
+      // 初始化对话管理器
+      conversationManager.init();
+      
+      // 加载配置
+      configManager.loadConfig();
+      configManager.loadCurrentPrompt();
+      historyManager.loadHistory();
+      
+      // 绑定过滤器事件
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          scriptManager.filterScripts(btn.dataset.category);
+        });
+      });
+      
+      // 绑定快捷键
+      document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'Enter') {
+          analyzeScript();
+        }
+        if (e.key === 'Escape') {
+          const panel = document.getElementById('aiPanel');
+          if (panel.style.display !== 'none') {
+            toggleAIPanel();
+          }
+        }
+      });
+    });
+
+    // 全局函数（保持向后兼容）
+    window.analyzeScript = analyzeScript;
+    window.refreshCategory = refreshCategory;
+    window.toggleAIPanel = toggleAIPanel;
+    window.switchPromptTab = switchPromptTab;
+    window.exportTXT = exportTXT;
+    window.saveConfig = configManager.saveConfig;
+    window.savePrompt = configManager.savePrompt;
+    window.resetPrompt = configManager.resetPrompt;
+    window.clearAllScripts = scriptManager.clearAllScripts;
+    window.clearHistory = historyManager.clearHistory;
+  </script>
+</body>
+</html>

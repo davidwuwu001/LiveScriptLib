@@ -608,11 +608,11 @@
         <div class="config-row">
           <div>
             <label for="apiUrl">API地址</label>
-            <input type="text" id="apiUrl" placeholder="https://api.openai.com/v1/chat/completions" value="https://api.openai.com/v1/chat/completions">
+            <input type="text" id="apiUrl" placeholder="https://aihubmix.com/v1/chat/completions" value="https://aihubmix.com/v1/chat/completions">
           </div>
           <div>
             <label for="modelName">模型名称</label>
-            <input type="text" id="modelName" placeholder="gpt-3.5-turbo" value="gpt-3.5-turbo">
+            <input type="text" id="modelName" placeholder="模型名称" value="模型名称">
           </div>
         </div>
         <div class="config-row">
@@ -677,10 +677,10 @@
         CONVERSATIONS: 'live_assistant_conversations'
       },
       DEFAULT_PROMPTS: {
-        interaction: '请基于以下直播稿内容，生成10条适合评论区互动的话术。要求：1. 语言亲切自然 2. 能够引导观众参与互动 3. 符合直播氛围 4. 每条话术独立成行，格式为"1. 话术内容"\n\n直播稿内容：{content}',
-        lottery: '你是有20年经验的直播助手，你的任务是完整阅读直播稿的内容，深入理解内容，从家长刚兴趣和结合家长的痛点，出色完成以下任务\n\n任务2：抽奖话术\n在帮我摘取出助手打在评论区的抽奖话术，字数不要太多40字以内，一些活泼的语气\n\n直播稿内容：{content}',
-        question: '你是有20年经验的直播助手，你的任务是完整阅读直播稿的内容，深入理解内容，从家长刚兴趣和结合家长的痛点，出色完成以下任务\n\n我现在是直播间的水军，我希望从家长的角度和主播互动，请帮我想50个互动问题，围绕家长对测评感兴趣和关心的角度\n\n直播稿内容：{content}\n\n请生成问题列表：',
-        promotion: '参考下面的话术的结构，根据今天的内容，给我写10条朋友圈转发话术，供我选择\n\n参考话术：\n"每个孩子都是星星，只是闪耀的方式不同✨\n天赋潜能测评 ——5 分钟解锁孩子脑区优势、学习类型！\n中科院认证技术，不用填问卷、无辐射，3 岁 + 就能测～\n直播间限时 168 元（立减 230 元）戳链接抢👇"\n\n每条话术独立成行，格式为"1. 话术内容"\n\n直播稿内容：{content}'
+        interaction: '你是拥有20年直播经验的资深助手，请仔细阅读直播稿内容，深入理解产品特点和家长需求，生成15条评论区互动话术。\n\n要求：\n1. 包含欢迎互动、活动亮点、产品促销三个维度\n2. 语言亲切自然，符合直播氛围\n3. 能够有效引导观众参与和转化\n4. 每条话术控制在50字以内，便于快速轮播\n5. 每条话术独立成行，格式为"1. 话术内容"\n\n直播稿内容：{content}',
+        lottery: '你是经验丰富的直播助手，请识别和提取直播稿里面的抽奖话术，方便我复制粘贴。\n\n要求：\n1. 字数控制在40字以内\n2. 每条话术独立成行，格式为"1. 话术内容"\n\n直播稿内容：{content}',
+        question: '我现在是直播间的水军，我希望从家长的角度和主播互动，请你围绕着直播稿，帮我想50个互动问题，围绕家长感兴趣和关心的角度\n\n要求：\n1. 问题要真实自然，符合家长的表达习惯\n2. 涵盖产品咨询、使用疑问、效果关注等维度\n3. 每个问题独立成行，格式为"1. 问题内容"\n\n直播稿内容：{content}',
+        promotion: '参考以下话术结构，根据直播内容生成10条朋友圈转发话术：\n\n参考话术：\n"每个孩子都是星星，只是闪耀的方式不同✨\n天赋潜能测评 ——5 分钟解锁孩子脑区优势、学习类型！\n中科院认证技术，不用填问卷、无辐射，3 岁 + 就能测～\n直播间限时 168 元（立减 230 元）戳链接抢👇"\n\n要求：\n1. 保持温馨感人的开头，吸引家长共鸣\n2. 突出产品核心价值和权威性\n3. 强调优惠信息和紧迫感\n4. 语言生动有趣，适合朋友圈传播\n5. 每条话术独立成行，格式为"1. 话术内容"\n\n直播稿内容：{content}'
       }
     };
 

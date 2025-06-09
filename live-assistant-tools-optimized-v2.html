@@ -1030,13 +1030,31 @@
         card.className = `script-card ${category}`;
         card.dataset.category = category;
         
-        card.innerHTML = `
-          <div class="script-header">
-            <div class="script-title">${utils.getCategoryName(category)} ${index}</div>
-            <button class="copy-btn" onclick="utils.copyToClipboard('${content.replace(/'/g, "\'")}')">📋 复制</button>
-          </div>
-          <div class="script-content">${content}</div>
-        `;
+        // 创建标题区域
+        const header = document.createElement('div');
+        header.className = 'script-header';
+        
+        // 创建标题
+        const title = document.createElement('div');
+        title.className = 'script-title';
+        title.textContent = `${utils.getCategoryName(category)} ${index}`;
+        
+        // 创建复制按钮
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-btn';
+        copyBtn.textContent = '📋 复制';
+        copyBtn.onclick = () => utils.copyToClipboard(content);
+        
+        // 创建内容区域
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'script-content';
+        contentDiv.textContent = content;
+        
+        // 组装卡片
+        header.appendChild(title);
+        header.appendChild(copyBtn);
+        card.appendChild(header);
+        card.appendChild(contentDiv);
         
         return card;
       },

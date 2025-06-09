@@ -1499,6 +1499,12 @@
       // 加载本地保存的话术
       scriptManager.loadScriptsFromLocal();
       
+      // 设置初始显示状态 - 默认显示所有内容
+      const scriptsGrid = document.getElementById('scriptsGrid');
+      const questionsGrid = document.getElementById('questionsGrid');
+      scriptsGrid.style.display = 'grid';
+      questionsGrid.style.display = 'grid';
+      
       // 绑定过滤器事件
       document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {

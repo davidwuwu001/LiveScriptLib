@@ -509,10 +509,47 @@
       .controls {
         flex-direction: column;
         align-items: stretch;
+        gap: 15px;
       }
       
       .filter-buttons {
-        justify-content: center;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        justify-items: stretch;
+      }
+      
+      .filter-buttons .filter-btn[data-category="all"] {
+        grid-column: 1 / -1;
+        justify-self: center;
+        max-width: 200px;
+      }
+      
+      .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(99, 102, 241, 0.05);
+        padding: 4px;
+        border-radius: 12px;
+        border: 1px solid rgba(99, 102, 241, 0.1);
+      }
+      
+      .filter-group .filter-btn {
+        flex: 1;
+        padding: 6px 8px;
+        font-size: 0.8rem;
+        border-radius: 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      .filter-group .refresh-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 0.7rem;
+        flex-shrink: 0;
       }
       
       .config-row {
@@ -526,6 +563,23 @@
       .script-card {
         padding: 16px;
         border-radius: 10px;
+      }
+    }
+    
+    /* 超小屏幕优化 */
+    @media (max-width: 480px) {
+      .filter-buttons {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+      
+      .filter-group .filter-btn {
+        font-size: 0.75rem;
+        padding: 5px 6px;
+      }
+      
+      .filter-group {
+        padding: 3px;
       }
     }
   </style>

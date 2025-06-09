@@ -674,7 +674,8 @@
         AI_CONFIG: 'aiConfig',
         CUSTOM_PROMPTS: 'customPrompts',
         ANALYSIS_HISTORY: 'analysisHistory',
-        CONVERSATIONS: 'live_assistant_conversations'
+        CONVERSATIONS: 'live_assistant_conversations',
+        GENERATED_SCRIPTS: 'liveAssistant_generatedScripts'
       },
       DEFAULT_PROMPTS: {
         interaction: '你是拥有20年直播经验的资深助手，请仔细阅读直播稿内容，深入理解产品特点和家长需求，生成15条评论区互动话术。\n\n要求：\n1. 包含欢迎互动、活动亮点、产品促销三个维度\n2. 语言亲切自然，符合直播氛围\n3. 能够有效引导观众参与和转化\n4. 每条话术控制在50字以内，便于快速轮播\n5. 每条话术独立成行，格式为"1. 话术内容"\n\n直播稿内容：{content}',
@@ -929,6 +930,8 @@
           }
         });
         this.updateStats();
+        // 保存生成的话术到本地存储
+        this.saveScriptsToLocal();
       },
 
       // 更新指定分类的卡片
@@ -952,6 +955,9 @@
           const card = this.createScriptCard(category, script, index + 1);
           container.appendChild(card);
         });
+        
+        // 保存话术到本地存储
+        this.saveScriptsToLocal();
       },
 
       // 创建话术卡片
@@ -1029,7 +1035,7 @@
 
       // 清空所有话术
       clearAllScripts() {
-        if (confirm('确定要清空所有话术吗？此操作将同时清除对话上下文，不可恢复！')) {
+        if (confirm('确定要清空所有话术吗？此操作将同时清除对话上下文和本地保存的话术，不可恢复！')) {
           const scriptsGrid = document.getElementById('scriptsGrid');
           const questionsGrid = document.getElementById('questionsGrid');
           
@@ -1039,8 +1045,58 @@
           // 清空所有对话上下文
           conversationManager.clearAllConversations();
           
+          // 清空本地保存的话术
+          localStorage.removeItem(CONFIG.STORAGE_KEYS.GENERATED_SCRIPTS);
+          
           this.updateStats();
-          utils.showToast('所有话术、问题和对话上下文已清空！');
+          utils.showToast('所有话术、问题、对话上下文和本地保存的话术已清空！');
+        }
+      },
+      
+      // 保存话术到本地存储
+      saveScriptsToLocal() {
+        const scriptsData = {};
+        const categories = Object.keys(CONFIG.CATEGORIES);
+        
+        categories.forEach(category => {
+          const cards = document.querySelectorAll(`[data-category="${category}"]`);
+          scriptsData[category] = Array.from(cards).map(card => {
+            return card.querySelector('.script-content').textContent;
+          });
+        });
+        
+        localStorage.setItem(CONFIG.STORAGE_KEYS.GENERATED_SCRIPTS, JSON.stringify(scriptsData));
+      },
+      
+      // 从本地存储加载话术
+      loadScriptsFromLocal() {
+        const savedScripts = localStorage.getItem(CONFIG.STORAGE_KEYS.GENERATED_SCRIPTS);
+        if (!savedScripts) return;
+        
+        try {
+          const scriptsData = JSON.parse(savedScripts);
+          const categories = Object.keys(CONFIG.CATEGORIES);
+          
+          categories.forEach(category => {
+            if (scriptsData[category] && scriptsData[category].length > 0) {
+              this.updateCategoryCards(category, scriptsData[category]);
+            }
+          });
+          
+          this.updateStats();
+          
+          // 如果有保存的话术，显示提示
+          const totalScripts = categories.reduce((total, category) => {
+            return total + (scriptsData[category] ? scriptsData[category].length : 0);
+          }, 0);
+          
+          if (totalScripts > 0) {
+            utils.showToast(`已恢复 ${totalScripts} 条本地保存的话术！`);
+          }
+        } catch (error) {
+          console.error('加载本地话术失败:', error);
+          // 如果数据损坏，清除无效数据
+          localStorage.removeItem(CONFIG.STORAGE_KEYS.GENERATED_SCRIPTS);
         }
       }
     };
@@ -1290,6 +1346,9 @@
       configManager.loadConfig();
       configManager.loadCurrentPrompt();
       historyManager.loadHistory();
+      
+      // 加载本地保存的话术
+      scriptManager.loadScriptsFromLocal();
       
       // 绑定过滤器事件
       document.querySelectorAll('.filter-btn').forEach(btn => {
